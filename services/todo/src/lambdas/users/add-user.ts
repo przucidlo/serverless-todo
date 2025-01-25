@@ -1,7 +1,7 @@
 import { PostConfirmationTriggerEvent } from "aws-lambda";
 import { Handler } from "aws-lambda/handler";
 import { User } from "../../domain/user";
-import { userEntity } from "../../db/user.entity";
+import { userEntity } from "../../infrastructure/dynamodb/entities/user.entity";
 import { logger } from "../../layers/logger.layer";
 import { PutItemCommand } from "dynamodb-toolbox";
 

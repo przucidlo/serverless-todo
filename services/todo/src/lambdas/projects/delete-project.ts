@@ -1,44 +1,31 @@
-import { APIGatewayEvent, APIGatewayProxyResultV2, Handler } from "aws-lambda";
-import { DeletePartitionCommand, GetItemCommand } from "dynamodb-toolbox";
-import {
-  gatewayRequestContext,
-  GatewayUser,
-} from "../../contexts/gateway-request.context";
-import { Project } from "../../domain/project";
-import { ProjectDTO } from "../../dto/project-dto";
-import { HttpNotFoundError } from "../../errors/http.error";
-import { table } from "../../db/table";
-import { logger } from "../../layers/logger.layer";
-import { projectEntity } from "../../db/project.entity";
+import { APIGatewayEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
+import { gatewayRequestContext } from '../../contexts/gateway-request.context';
+import { HttpNotFoundError } from '../../errors/http.error';
+import { logger } from '../../layers/logger.layer';
+import { projectService } from '../../domain/services/project/project.service';
+import { dynamodbProjectRepository } from '../../infrastructure/dynamodb/project/project.repository';
 
-async function deleteProject(projectId: string, user: GatewayUser) {
-  const project = await projectEntity
-    .build(GetItemCommand)
-    .key({ pk: `PROJECT#${projectId}`, sk: `PROJECT#${projectId}` })
-    .send();
-
-  const dto = project.toDTO();
-
-  await table
-    .build(DeletePartitionCommand)
-    .query({ partition: `PROJECT#${dto.id}` })
-    .send();
-
-  logger.info({ projectId: dto.id }, "Deleted project");
-}
+const service = projectService(dynamodbProjectRepository());
 
 export const handler: Handler<
   APIGatewayEvent,
   APIGatewayProxyResultV2
 > = async (event, context) => {
   return gatewayRequestContext(
-    async ({ user }) => {
-      if (!event.pathParameters || !event.pathParameters["projectId"]) {
-        throw new HttpNotFoundError("Project not found");
+    async ({ identity }) => {
+      if (!event.pathParameters || !event.pathParameters['projectId']) {
+        throw new HttpNotFoundError('Project not found');
       }
 
-      return deleteProject(event.pathParameters["projectId"], user);
+      await service.deleteProject(identity, {
+        id: event.pathParameters['projectId'],
+      });
+
+      logger.info(
+        { projectId: event.pathParameters['projectId'] },
+        'Deleted project',
+      );
     },
-    { target: ProjectDTO, event, context }
+    { event, context },
   );
 };

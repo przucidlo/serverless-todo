@@ -4,7 +4,7 @@ export interface Entity {
 
 export type EntityData<E extends Entity> = ReturnType<E["toDTO"]>;
 
-export type UpdateEntity<
+export type PartialEntity<
   E extends Entity,
   I extends keyof EntityData<E>
 > = Partial<EntityData<E>> & Pick<EntityData<E>, I>;

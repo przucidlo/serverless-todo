@@ -1,15 +1,15 @@
 import { APIGatewayEvent, APIGatewayProxyResultV2, Handler } from "aws-lambda";
-import { table } from "../../../db/table";
+import { table } from "../../../infrastructure/dynamodb/entities/table";
 import { QueryCommand } from "dynamodb-toolbox";
 import {
   gatewayRequestContext,
-  GatewayUser,
+  GatewayIdentity,
 } from "../../../contexts/gateway-request.context";
-import { memberEntity } from "../../../db/member.entity";
+import { memberEntity } from "../../../infrastructure/dynamodb/entities/member.entity";
 import { ProjectUserDTO } from "../../../dto/member.dto";
 import { ProjectUser } from "../../../domain/project-user";
 
-async function getUserProjects(user: GatewayUser) {
+async function getUserProjects(user: GatewayIdentity) {
   const query = await table
     .build(QueryCommand)
     .query({
@@ -37,7 +37,7 @@ export const handler: Handler<
   APIGatewayProxyResultV2
 > = async (event, context) => {
   return gatewayRequestContext(
-    ({ user }) => {
+    ({ identity: user }) => {
       return getUserProjects(user);
     },
     {

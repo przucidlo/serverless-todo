@@ -1,39 +1,67 @@
-import { Identity } from "../../identity";
-import { Project } from "../../project";
-import { UpdateEntity } from "../../types/entity.type";
-import { ProjectRepository } from "./project.repository";
+import { Identity } from '../../identity';
+import { PartialProject, Project } from '../../project';
+import { ProjectUser } from '../../project-user';
+import { PartialTask, Task } from '../../task';
+import { PartialEntity } from '../../types/entity.type';
+import { ProjectRepository } from './project.repository';
 
 export const projectService = (repository: ProjectRepository) => {
-  function addProject(project: Project, identity: Identity) {
-    return repository.createProject(project, identity);
-  }
+  const executeAsOwner =
+    <R>(f: (project: Project, value: PartialProject) => Promise<R>) =>
+    async (identity: Identity, value: PartialProject) => {
+      const project = await repository.getProject(value.id);
 
-  async function deleteProject(projectId: string, identity: Identity) {
-    const project = await repository.getProject(projectId);
+      if (!project.isOwner(identity)) {
+        throw new Error('Insufficient permissions.');
+      }
 
-    if (!project.isOwner(identity)) {
-      throw new Error("Insufficient permissions.");
-    }
+      return f(project, value);
+    };
 
-    return repository.deleteProject(project);
-  }
+  const executeAsMember =
+    <V extends PartialTask | Task, R = Task>(
+      f: (member: ProjectUser, value: V) => Promise<R>,
+    ) =>
+    async (identity: Identity, value: V) => {
+      const id = value instanceof Task ? value.toDTO().id : value.id;
+
+      const member = await repository.getMember(identity, id);
+
+      if (!member) {
+        throw new Error('User does not belong to the project');
+      }
+
+      return f(member, value);
+    };
 
   async function updateProject(
-    entity: UpdateEntity<Project, "id">,
-    identity: Identity
+    project: Project,
+    value: PartialEntity<Project, 'id'>,
   ) {
-    const project = await repository.getProject(entity.id);
+    let requiresMembersUpdate = false;
 
-    if (!project.isOwner(identity)) {
-      throw new Error("Insufficient permissions.");
+    if (value.name && project.compareNames(value.name)) {
+      project.changeName(value.name);
+
+      requiresMembersUpdate = true;
     }
 
-    if (entity.name && project.compareNames(entity.name)) {
-      project.changeName(entity.name);
+    const entity = await repository.updateProject(project);
+
+    if (requiresMembersUpdate) {
+      // Publish to sqs
     }
 
-    return repository.updateProject(project);
+    return entity;
   }
 
-  return { addProject, deleteProject, updateProject };
+  return {
+    addProject: repository.createProject,
+    addTask: executeAsMember<Task>((_, task) => repository.createTask(task)),
+    deleteProject: executeAsOwner(repository.deleteProject),
+    updateProject: executeAsOwner(updateProject),
+    getTasks: executeAsMember((member) =>
+      repository.getTasks(member.toDTO().project.id),
+    ),
+  };
 };

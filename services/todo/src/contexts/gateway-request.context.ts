@@ -1,15 +1,15 @@
-import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from "aws-lambda";
-import { ClassConstructor } from "class-transformer";
-import { withRequest } from "../layers/logger.layer";
-import { httpRequestContext } from "./request.context";
-import { HttpUnauthorizedError } from "../errors/http.error";
-import { Identity } from "../domain/identity";
+import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda';
+import { ClassConstructor } from 'class-transformer';
+import { withRequest } from '../layers/logger.layer';
+import { httpRequestContext } from './request.context';
+import { HttpUnauthorizedError } from '../errors/http.error';
+import { Identity } from '../domain/identity';
 
-export type GatewayUser = Identity;
+export type GatewayIdentity = Identity;
 
 export interface GatewayHandlerContext<TBody extends object> {
   body: TBody;
-  user: GatewayUser;
+  identity: GatewayIdentity;
 }
 
 export async function gatewayRequestContext<TBody extends object>(
@@ -18,7 +18,7 @@ export async function gatewayRequestContext<TBody extends object>(
     target?: ClassConstructor<TBody>;
     event: APIGatewayEvent;
     context: Context;
-  }
+  },
 ): Promise<APIGatewayProxyResultV2> {
   withRequest(options.event, options.context);
 
@@ -37,18 +37,18 @@ export async function gatewayRequestContext<TBody extends object>(
 
       return handler({
         body,
-        user: {
+        identity: {
           username: authorizer.claims.username,
         },
       });
-    }
+    },
   );
 
   return {
     body,
     statusCode,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   };
 }
