@@ -5,6 +5,7 @@ import {
   PutTransaction,
   QueryCommand,
   UpdateItemCommand,
+  executeTransactWrite,
 } from 'dynamodb-toolbox';
 import { projectEntity } from '../entities/project.entity';
 import { Project } from '../../../domain/project';
@@ -14,8 +15,7 @@ import { Task } from '../../../domain/task';
 import { TaskStatus } from '../../../domain/task-status';
 import { ProjectUser } from '../../../domain/project-user';
 import { memberEntity } from '../entities/member.entity';
-import { execute } from 'dynamodb-toolbox/dist/esm/entity/actions/transactWrite';
-import { ProjectRepository } from '../../../domain/services/project/project.repository';
+import { ProjectRepository } from '../../../application/services/project/project.repository';
 import { Identity } from '../../../domain/identity';
 
 export const dynamodbProjectRepository: () => ProjectRepository = () => {
@@ -51,7 +51,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
       projectName: dto.name,
     });
 
-    const { ToolboxItems } = await execute(
+    const { ToolboxItems } = await executeTransactWrite(
       projectTransaction,
       projectUserTransaction,
     );
@@ -94,7 +94,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
     identity: Identity,
     projectId: string,
   ): Promise<ProjectUser> {
-    const { Item } = await projectEntity
+    const { Item } = await memberEntity
       .build(GetItemCommand)
       .key({
         pk: `PROJECT#${projectId}`,
@@ -106,7 +106,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
       throw new Error('Project not found');
     }
 
-    // todo:
+    return toMember(Item);
   }
 
   async function updateMembers(project: Project) {
@@ -224,6 +224,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
     createProject,
     deleteProject,
     updateMembers,
+    getMember,
     createTask,
     getTasks,
     getUserProjects,

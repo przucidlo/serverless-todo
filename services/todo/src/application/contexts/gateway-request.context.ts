@@ -1,9 +1,9 @@
 import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { ClassConstructor } from 'class-transformer';
-import { withRequest } from '../layers/logger.layer';
+import { withRequest } from '../../layers/logger.layer';
 import { httpRequestContext } from './request.context';
-import { HttpUnauthorizedError } from '../errors/http.error';
-import { Identity } from '../domain/identity';
+import { HttpUnauthorizedError } from './errors/http.error';
+import { Identity } from '../../domain/identity';
 
 export type GatewayIdentity = Identity;
 

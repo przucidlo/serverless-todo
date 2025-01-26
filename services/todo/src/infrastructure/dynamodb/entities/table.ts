@@ -1,6 +1,6 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { Table } from "dynamodb-toolbox";
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { Table } from 'dynamodb-toolbox';
 
 const dynamoDBClient = new DynamoDBClient({});
 
@@ -13,19 +13,19 @@ const documentClient = DynamoDBDocumentClient.from(dynamoDBClient, {
 
 export const table = new Table({
   documentClient,
-  name: "dev_todo",
-  partitionKey: { name: "pk", type: "string" },
-  sortKey: { name: "sk", type: "string" },
+  name: 'dev_todo',
+  partitionKey: { name: 'pk', type: 'string' },
+  sortKey: { name: 'sk', type: 'string' },
   indexes: {
     GSI1: {
-      type: "global",
+      type: 'global',
       partitionKey: {
-        name: "GSI1PK",
-        type: "string",
+        name: 'GSI1PK',
+        type: 'string',
       },
       sortKey: {
-        name: "GSI1SK",
-        type: "string",
+        name: 'GSI1SK',
+        type: 'string',
       },
     },
   },

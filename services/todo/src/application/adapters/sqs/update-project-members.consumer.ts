@@ -1,3 +1,3 @@
-import { Project } from "../../domain/project";
+import { Project } from '../../../domain/project';
 
 export function updateProjectMembersConsumer(project: Project) {}

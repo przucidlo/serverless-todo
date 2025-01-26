@@ -1,7 +1,7 @@
-import { HttpError, HttpUnprocessableContentError } from "../errors/http.error";
-import { ClassConstructor, plainToInstance } from "class-transformer";
-import { validateOrReject, ValidationOptions } from "class-validator";
-import { logger } from "../layers/logger.layer";
+import { HttpError, HttpUnprocessableContentError } from './errors/http.error';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { validateOrReject, ValidationOptions } from 'class-validator';
+import { logger } from '../../layers/logger.layer';
 
 interface HttpContext<TBody = unknown> {
   method: string;
@@ -28,7 +28,7 @@ async function parseBody({ body, bodyClass, validatorOptions }: HttpContext) {
 
 function mapHandlerOutput(
   output: unknown | unknown[],
-  classConstructor?: ClassConstructor<unknown>
+  classConstructor?: ClassConstructor<unknown>,
 ): unknown {
   if (!classConstructor) {
     return output;
@@ -45,17 +45,17 @@ function buildHttpResponse(statusCode: number, body: unknown) {
 
 export async function httpRequestContext<TBody extends object>(
   context: HttpContext<TBody>,
-  handler: (body: TBody) => Promise<unknown>
+  handler: (body: TBody) => Promise<unknown>,
 ): Promise<{ statusCode: number; body: string }> {
   try {
     const response = mapHandlerOutput(
       await handler(await parseBody(context)),
-      context.bodyClass
+      context.bodyClass,
     );
 
     return buildHttpResponse(
-      response ? (["POST", "PUT"].includes(context.method) ? 201 : 200) : 204,
-      { data: response }
+      response ? (['POST', 'PUT'].includes(context.method) ? 201 : 200) : 204,
+      { data: response },
     );
   } catch (err) {
     if (err instanceof HttpUnprocessableContentError) {
@@ -66,8 +66,8 @@ export async function httpRequestContext<TBody extends object>(
       return buildHttpResponse(err.code, { message: err.message });
     }
 
-    logger.error({ err }, "Request context failure");
+    logger.error({ err }, 'Request context failure');
 
-    return buildHttpResponse(500, { message: "Internal Server Error" });
+    return buildHttpResponse(500, { message: 'Internal Server Error' });
   }
 }

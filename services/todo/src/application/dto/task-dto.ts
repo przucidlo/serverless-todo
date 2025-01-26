@@ -1,9 +1,9 @@
-import { IsEmpty, IsEnum, IsOptional, IsString } from "class-validator";
-import { Task } from "../domain/task";
-import { TaskStatus } from "../domain/task-status";
+import { IsEmpty, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Task } from '../../domain/task';
+import { TaskStatus } from '../../domain/task-status';
 
 export enum ValidationGroup {
-  PATCH = "PATCH",
+  PATCH = 'PATCH',
 }
 
 export class TaskDTO {
@@ -36,7 +36,7 @@ export class TaskDTO {
   public toEntity(
     id: string | undefined,
     projectId: string,
-    owner: string
+    owner: string,
   ): Task {
     return new Task(
       id,
@@ -44,7 +44,7 @@ export class TaskDTO {
       this.title,
       this.description,
       owner,
-      this.status
+      this.status,
     );
   }
 }

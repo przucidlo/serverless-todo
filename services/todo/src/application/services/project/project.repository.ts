@@ -1,7 +1,7 @@
-import { Identity } from '../../identity';
-import { Project } from '../../project';
-import { ProjectUser } from '../../project-user';
-import { Task } from '../../task';
+import { Identity } from '../../../domain/identity';
+import { Project } from '../../../domain/project';
+import { ProjectUser } from '../../../domain/project-user';
+import { Task } from '../../../domain/task';
 
 export interface ProjectRepository {
   getProject: (projectId: string) => Promise<Project>;
@@ -12,7 +12,7 @@ export interface ProjectRepository {
   updateProject: (project: Project) => Promise<Project>;
   deleteProject: (project: Project) => Promise<void>;
 
-  getUserProjects: (identity: Identity) => Promise<ProjectUser>;
+  getUserProjects: (identity: Identity) => Promise<ProjectUser[]>;
 
   getMember: (identity: Identity, projectId: string) => Promise<ProjectUser>;
   updateMembers: (project: Project) => Promise<void>;

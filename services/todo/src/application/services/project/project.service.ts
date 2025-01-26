@@ -1,15 +1,18 @@
-import { Identity } from '../../identity';
-import { PartialProject, Project } from '../../project';
-import { ProjectUser } from '../../project-user';
-import { PartialTask, Task } from '../../task';
-import { PartialEntity } from '../../types/entity.type';
+import { Identity } from '../../../domain/identity';
+import { PartialProject, Project } from '../../../domain/project';
+import { ProjectUser } from '../../../domain/project-user';
+import { Task } from '../../../domain/task';
+import { FromApplication, isEntity } from '../../../domain/types/entity.type';
 import { ProjectRepository } from './project.repository';
 
 export const projectService = (repository: ProjectRepository) => {
   const executeAsOwner =
-    <R>(f: (project: Project, value: PartialProject) => Promise<R>) =>
-    async (identity: Identity, value: PartialProject) => {
-      const project = await repository.getProject(value.id);
+    <V extends FromApplication<{ id: string }>, R>(
+      f: (project: Project, value: V) => Promise<R>,
+    ) =>
+    async (identity: Identity, value: V) => {
+      const id = isEntity(value) ? value.toDTO().id : value.id;
+      const project = await repository.getProject(id);
 
       if (!project.isOwner(identity)) {
         throw new Error('Insufficient permissions.');
@@ -19,13 +22,15 @@ export const projectService = (repository: ProjectRepository) => {
     };
 
   const executeAsMember =
-    <V extends PartialTask | Task, R = Task>(
+    <V extends FromApplication<{ projectId: string }>, R = Task>(
       f: (member: ProjectUser, value: V) => Promise<R>,
     ) =>
     async (identity: Identity, value: V) => {
-      const id = value instanceof Task ? value.toDTO().id : value.id;
+      const projectId = isEntity(value)
+        ? value.toDTO().projectId
+        : value.projectId;
 
-      const member = await repository.getMember(identity, id);
+      const member = await repository.getMember(identity, projectId);
 
       if (!member) {
         throw new Error('User does not belong to the project');
@@ -34,10 +39,7 @@ export const projectService = (repository: ProjectRepository) => {
       return f(member, value);
     };
 
-  async function updateProject(
-    project: Project,
-    value: PartialEntity<Project, 'id'>,
-  ) {
+  async function updateProject(project: Project, value: PartialProject) {
     let requiresMembersUpdate = false;
 
     if (value.name && project.compareNames(value.name)) {
@@ -57,10 +59,13 @@ export const projectService = (repository: ProjectRepository) => {
 
   return {
     addProject: repository.createProject,
-    addTask: executeAsMember<Task>((_, task) => repository.createTask(task)),
     deleteProject: executeAsOwner(repository.deleteProject),
     updateProject: executeAsOwner(updateProject),
-    getTasks: executeAsMember((member) =>
+    getProjects: repository.getUserProjects,
+    addTask: executeAsMember<Task, Task>((_, task) =>
+      repository.createTask(task),
+    ),
+    getTasks: executeAsMember<{ projectId: string }, Task[]>((member) =>
       repository.getTasks(member.toDTO().project.id),
     ),
   };

@@ -1,7 +1,7 @@
 import { TaskStatus } from './task-status';
 import { PartialEntity } from './types/entity.type';
 
-export type PartialTask = PartialEntity<Task, 'id'>;
+export type PartialTask = PartialEntity<Task, 'id' | 'projectId'>;
 
 export class Task {
   private id: string;

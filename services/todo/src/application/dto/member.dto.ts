@@ -1,5 +1,5 @@
-import { IsString, ValidateNested } from "class-validator";
-import { ProjectUser } from "../domain/project-user";
+import { IsString, ValidateNested } from 'class-validator';
+import { ProjectUser } from '../../domain/project-user';
 
 class ProjectDTO {
   constructor(id: string, name: string) {

@@ -1,6 +1,6 @@
-import { IsEmpty, IsOptional, IsString } from "class-validator";
-import { Project } from "../domain/project";
-import { ValidationGroup } from "./task-dto";
+import { IsEmpty, IsOptional, IsString } from 'class-validator';
+import { Project } from '../../domain/project';
+import { ValidationGroup } from './task-dto';
 
 export class ProjectDTO {
   constructor(entity?: Project) {

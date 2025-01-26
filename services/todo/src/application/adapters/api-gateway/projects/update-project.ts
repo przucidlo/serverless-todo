@@ -1,10 +1,10 @@
 import { APIGatewayEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
-import { gatewayRequestContext } from '../../contexts/gateway-request.context';
-import { ProjectDTO } from '../../dto/project-dto';
-import { HttpNotFoundError } from '../../errors/http.error';
-import { projectService } from '../../domain/services/project/project.service';
-import { dynamodbProjectRepository } from '../../infrastructure/dynamodb/project/project.repository';
-import { logger } from '../../layers/logger.layer';
+import { gatewayRequestContext } from '../../../contexts/gateway-request.context';
+import { ProjectDTO } from '../../../dto/project-dto';
+import { HttpNotFoundError } from '../../../contexts/errors/http.error';
+import { projectService } from '../../../services/project/project.service';
+import { dynamodbProjectRepository } from '../../../../infrastructure/dynamodb/project/project.repository';
+import { logger } from '../../../../layers/logger.layer';
 
 const service = projectService(dynamodbProjectRepository());
 
