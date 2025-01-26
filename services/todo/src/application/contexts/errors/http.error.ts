@@ -1,16 +1,19 @@
 export class HttpError extends Error {
-  constructor(public code: number, public body: unknown) {
+  constructor(
+    public code: number,
+    public body: unknown,
+  ) {
     super(
       JSON.stringify({
         message: body,
-      })
+      }),
     );
   }
 }
 
 export class HttpUnauthorizedError extends HttpError {
   constructor() {
-    super(401, "Unauthorized");
+    super(401, 'Unauthorized');
   }
 }
 

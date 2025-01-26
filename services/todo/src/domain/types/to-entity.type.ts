@@ -1,5 +1,5 @@
-import { Entity } from "./entity.type";
+import { Entity } from './entity.type';
 
-export type ToEntity<E extends Entity> = ReturnType<E["toDTO"]> & {
+export type ToEntity<E extends Entity> = ReturnType<E['toDTO']> & {
   toEntity: (...args: any[]) => E;
 };
