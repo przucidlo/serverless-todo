@@ -1,5 +1,7 @@
-import { Identity } from "./identity";
-import { Entity } from "./types/entity.type";
+import { Identity } from './identity';
+import { Entity, PartialEntity } from './types/entity.type';
+
+export type PartialProject = PartialEntity<Project, 'id'>;
 
 export class Project implements Entity {
   private id: string;
