@@ -22,7 +22,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
   async function getProject(projectId: string): Promise<Project> {
     const { Item } = await projectEntity
       .build(GetItemCommand)
-      .key(getProjectKey(projectId))
+      .key({ pk: projectId, sk: projectId })
       .send();
 
     if (!Item) {
@@ -41,7 +41,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
 
     const projectTransaction = projectEntity
       .build(PutTransaction)
-      .item({ ...getProjectKey(id), ...dto });
+      .item({ pk: id, sk: id, ...dto });
 
     const projectUserTransaction = memberEntity.build(PutTransaction).item({
       pk: id,
@@ -86,7 +86,8 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
 
     await table
       .build(DeletePartitionCommand)
-      .query({ partition: `PROJECT#${id}` })
+      .query({ partition: getProjectKey(id).pk })
+      .entities(projectEntity, memberEntity)
       .send();
   }
 

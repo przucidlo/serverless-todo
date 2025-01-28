@@ -16,13 +16,13 @@ export const dynamodbMemberRepository = () => {
     const { Item } = await memberEntity
       .build(GetItemCommand)
       .key({
-        pk: `PROJECT#${projectId}`,
-        sk: `USER#${identity.username}`,
+        pk: projectId,
+        sk: identity.username,
       })
       .send();
 
     if (!Item) {
-      throw new Error('Project not found');
+      throw new Error('Member not found');
     }
 
     return toMember(Item);

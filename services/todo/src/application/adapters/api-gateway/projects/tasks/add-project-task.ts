@@ -29,6 +29,8 @@ export const handler: Handler<
           { projectId: task.toDTO().projectId, taskId: task.toDTO().id },
           'Created task',
         );
+
+        return task;
       }
 
       throw new HttpNotFoundError('Project not found');
