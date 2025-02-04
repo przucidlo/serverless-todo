@@ -4,8 +4,13 @@ import { HttpNotFoundError } from '../../../contexts/errors/http.error';
 import { logger } from '../../../../layers/logger.layer';
 import { projectService } from '../../../services/project/project.service';
 import { dynamodbProjectRepository } from '../../../../infrastructure/dynamodb/project/project.repository';
+import { sqsPublisher } from '../../sqs/publisher/sqs.publisher';
+import { sqsClient, sqsQueues } from '../../sqs/sqs.client';
 
-const service = projectService(dynamodbProjectRepository());
+const service = projectService(
+  dynamodbProjectRepository(),
+  sqsPublisher(sqsClient, sqsQueues),
+);
 
 export const handler: Handler<
   APIGatewayEvent,

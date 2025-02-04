@@ -3,14 +3,20 @@ import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validateOrReject, ValidationOptions } from 'class-validator';
 import { logger } from '../../layers/logger.layer';
 
-interface HttpContext<TBody = unknown> {
-  method: string;
+interface ParsableBody<TBody = unknown> {
   body: string | null;
   bodyClass?: ClassConstructor<TBody>;
   validatorOptions?: ValidationOptions;
 }
 
-async function parseBody({ body, bodyClass, validatorOptions }: HttpContext) {
+interface HttpContext<TBody = unknown> extends ParsableBody<TBody> {
+  method: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface QueueContext<TBody = unknown> extends ParsableBody<TBody> {}
+
+async function parseBody({ body, bodyClass, validatorOptions }: ParsableBody) {
   if (!bodyClass || !body) {
     return body;
   }
@@ -70,4 +76,11 @@ export async function httpRequestContext<TBody extends object>(
 
     return buildHttpResponse(500, { message: 'Internal Server Error' });
   }
+}
+
+export async function queueRequestContext<TBody extends object>(
+  context: QueueContext<TBody>,
+  handler: (body: TBody) => Promise<void>,
+): Promise<void> {
+  return handler(await parseBody(context));
 }

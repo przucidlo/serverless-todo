@@ -1,4 +1,4 @@
-import { IsEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { Project } from '../../domain/project';
 import { ValidationGroup } from './task-dto';
 
@@ -13,7 +13,6 @@ export class ProjectDTO {
     }
   }
 
-  @IsEmpty()
   public id?: string;
 
   @IsString()

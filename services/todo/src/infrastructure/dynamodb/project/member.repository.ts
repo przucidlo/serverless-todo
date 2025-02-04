@@ -1,12 +1,41 @@
-import { GetItemCommand, QueryCommand } from 'dynamodb-toolbox';
+import {
+  BatchPutRequest,
+  BatchWriteCommand,
+  executeBatchWrite,
+  GetItemCommand,
+  QueryCommand,
+} from 'dynamodb-toolbox';
 import { ProjectUser } from '../../../domain/project-user';
 import { memberEntity } from '../entities/member.entity';
 import { Identity } from '../../../domain/identity';
 import { table } from '../entities/table';
+import { Project } from '../../../domain/project';
 
 export const dynamodbMemberRepository = () => {
   async function updateMembers(project: Project) {
-    throw new Error('todo');
+    const { id, name } = project.toDTO();
+
+    const { Items } = await table
+      .build(QueryCommand)
+      .query({ partition: `PROJECT#${id}`, range: { beginsWith: 'USER#' } })
+      .entities(memberEntity)
+      .send();
+
+    if (!Items || (Array.isArray(Items) && Items.length === 0)) {
+      return;
+    }
+
+    await executeBatchWrite(
+      table
+        .build(BatchWriteCommand)
+        .requests(
+          ...Items.map((i) =>
+            memberEntity
+              .build(BatchPutRequest)
+              .item({ ...i, projectName: name }),
+          ),
+        ),
+    );
   }
 
   async function getMember(

@@ -60,6 +60,18 @@ resource "aws_iam_role" "lambda_exec" {
             "logs:PutLogEvents",
           ],
           Resource = "*"
+        },
+        {
+          "Sid"    = "SQS",
+          "Effect" = "Allow",
+          "Action" = [
+            "sqs:SendMessage",
+            "sqs:ReceiveMessage",
+            "sqs:DeleteMessage",
+            "sqs:GetQueueAttributes",
+            "sqs:GetQueueUrl",
+          ],
+          "Resource" = "*"
         }
       ]
     })
@@ -84,6 +96,19 @@ resource "aws_lambda_function" "lambda" {
     application_log_level = "DEBUG"
   }
 
-  for_each = { for lambda in setunion(var.gateway_lambdas, var.lambdas) : lambda.name => lambda }
+  environment {
+    variables = {
+      SQS_QUEUES = jsonencode({
+        for queue_name, queue in aws_sqs_queue.queues:
+        queue_name => {
+          url = queue.url
+        }
+      })
+    }
+  }
 
+
+  for_each = { for lambda in setunion(var.gateway_lambdas, var.lambdas, var.queues) : lambda.name => lambda }
+
+  depends_on = [  aws_sqs_queue.queues ]
 }
