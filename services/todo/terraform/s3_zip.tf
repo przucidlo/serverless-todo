@@ -7,5 +7,5 @@ resource "aws_s3_object" "lambda" {
 
   etag = filemd5("${path.module}/${var.deploy_folder_path}/${each.value.name}.zip")
 
-  for_each = { for lambda in setunion(var.gateway_lambdas, var.lambdas) : lambda.name => lambda }
+  for_each = { for lambda in setunion(var.gateway_lambdas, var.lambdas, var.queues) : lambda.name => lambda }
 }

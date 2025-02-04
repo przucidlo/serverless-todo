@@ -3,9 +3,15 @@ import { PartialProject, Project } from '../../../domain/project';
 import { ProjectUser } from '../../../domain/project-user';
 import { Task } from '../../../domain/task';
 import { FromApplication, isEntity } from '../../../domain/types/entity.type';
+import { ProjectDTO } from '../../dto/project-dto';
+import { EventPublisher } from '../../interfaces/event-publisher.interface';
+import { UpdateProjectMembersEvent } from '../../types/events.type';
 import { ProjectRepository } from './project.repository';
 
-export const projectService = (repository: ProjectRepository) => {
+export const projectService = (
+  repository: ProjectRepository,
+  publisher: EventPublisher,
+) => {
   const executeAsOwner =
     <V extends FromApplication<{ id: string }>, R>(
       f: (project: Project, value: V) => Promise<R>,
@@ -42,7 +48,7 @@ export const projectService = (repository: ProjectRepository) => {
   async function updateProject(project: Project, value: PartialProject) {
     let requiresMembersUpdate = false;
 
-    if (value.name && project.compareNames(value.name)) {
+    if (value.name && !project.compareNames(value.name)) {
       project.changeName(value.name);
 
       requiresMembersUpdate = true;
@@ -51,7 +57,10 @@ export const projectService = (repository: ProjectRepository) => {
     const entity = await repository.updateProject(project);
 
     if (requiresMembersUpdate) {
-      // Publish to sqs
+      await publisher.publish<UpdateProjectMembersEvent>(
+        'update-project-members',
+        new ProjectDTO(entity),
+      );
     }
 
     return entity;
@@ -68,5 +77,6 @@ export const projectService = (repository: ProjectRepository) => {
     getTasks: executeAsMember<{ projectId: string }, Task[]>((member) =>
       repository.getTasks(member.toDTO().project.id),
     ),
+    updateMembers: repository.updateMembers,
   };
 };

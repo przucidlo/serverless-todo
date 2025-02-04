@@ -26,7 +26,7 @@ export const dynamodbTaskRepository = () => {
       .build(QueryCommand)
       .query({
         partition: `PROJECT#${projectId}`,
-        range: { beginsWith: 'TASK' },
+        range: { beginsWith: 'TASK#' },
       })
       .entities(taskEntity)
       .send();

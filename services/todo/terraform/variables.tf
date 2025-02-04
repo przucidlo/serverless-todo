@@ -51,3 +51,12 @@ variable "lambdas" {
     { name = "add-user" },
   ]
 }
+
+variable "queues" {
+  type = set(object({
+    name = string
+  }))
+  default = [
+    { name = "update-project-members" },
+  ]
+}

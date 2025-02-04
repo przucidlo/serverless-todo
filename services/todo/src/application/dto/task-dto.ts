@@ -4,6 +4,7 @@ import { TaskStatus } from '../../domain/task-status';
 
 export enum ValidationGroup {
   PATCH = 'PATCH',
+  QUEUE = 'QUEUE',
 }
 
 export class TaskDTO {

@@ -4,8 +4,13 @@ import { TaskDTO } from '../../../../dto/task-dto';
 import { gatewayRequestContext } from '../../../../contexts/gateway-request.context';
 import { projectService } from '../../../../services/project/project.service';
 import { dynamodbProjectRepository } from '../../../../../infrastructure/dynamodb/project/project.repository';
+import { sqsPublisher } from '../../../sqs/publisher/sqs.publisher';
+import { sqsClient } from '../../../sqs/sqs.client';
 
-const service = projectService(dynamodbProjectRepository());
+const service = projectService(
+  dynamodbProjectRepository(),
+  sqsPublisher(sqsClient),
+);
 
 export const handler: Handler<
   APIGatewayEvent,
