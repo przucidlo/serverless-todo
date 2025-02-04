@@ -5,11 +5,11 @@ import { logger } from '../../../../layers/logger.layer';
 import { projectService } from '../../../services/project/project.service';
 import { dynamodbProjectRepository } from '../../../../infrastructure/dynamodb/project/project.repository';
 import { sqsPublisher } from '../../sqs/publisher/sqs.publisher';
-import { sqsClient } from '../../sqs/sqs.client';
+import { sqsClient, sqsQueues } from '../../sqs/sqs.client';
 
 const service = projectService(
   dynamodbProjectRepository(),
-  sqsPublisher(sqsClient),
+  sqsPublisher(sqsClient, sqsQueues),
 );
 
 export const handler: Handler<

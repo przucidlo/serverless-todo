@@ -4,15 +4,14 @@ import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 type QueuesRecord = Record<string, { url: string }>;
 
-export function sqsPublisher(client: SQSClient): EventPublisher {
-  const queues: QueuesRecord = JSON.parse(process.env.SQS_QUEUES ?? '{}');
-
+export function sqsPublisher(
+  client: SQSClient,
+  queues: QueuesRecord,
+): EventPublisher {
   async function publish(event: string, payload: unknown) {
     if (!queues?.[event]) {
       throw new Error(`Queue ${event} not found`);
     }
-
-    logger.info({ event, payload, queues: queues[event] }, 'Publishing event');
 
     await client.send(
       new SendMessageCommand({
@@ -20,6 +19,8 @@ export function sqsPublisher(client: SQSClient): EventPublisher {
         QueueUrl: event,
       }),
     );
+
+    logger.info({ event, payload }, 'Published event');
   }
 
   return {

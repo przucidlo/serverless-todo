@@ -4,12 +4,12 @@ import { ProjectDTO } from '../../../dto/project-dto';
 import { projectService } from '../../../services/project/project.service';
 import { dynamodbProjectRepository } from '../../../../infrastructure/dynamodb/project/project.repository';
 import { sqsPublisher } from '../publisher/sqs.publisher';
-import { sqsClient } from '../sqs.client';
+import { sqsClient, sqsQueues } from '../sqs.client';
 import { sqsRequestContext } from '../../../contexts/sqs-request.context';
 
 const service = projectService(
   dynamodbProjectRepository(),
-  sqsPublisher(sqsClient),
+  sqsPublisher(sqsClient, sqsQueues),
 );
 
 export const handler: SQSHandler = async (
