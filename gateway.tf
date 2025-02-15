@@ -1,6 +1,12 @@
 resource "aws_apigatewayv2_api" "public" {
   name          = "public"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_origins = ["*"]
+    allow_headers = ["*"]
+  }
 }
 
 resource "aws_apigatewayv2_stage" "public" {
