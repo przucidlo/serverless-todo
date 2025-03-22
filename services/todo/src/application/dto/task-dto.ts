@@ -39,7 +39,7 @@ export class TaskDTO {
   public owner!: string | undefined;
 
   public toEntity(
-    id: string | undefined,
+    id: string,
     projectId: string,
     owner: string,
   ): Task {
