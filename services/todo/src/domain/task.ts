@@ -27,6 +27,12 @@ export class Task {
     this.status = status;
   }
 
+  transition(status: TaskStatus) {
+    this.status = status;
+
+    return this;
+  }
+
   toDTO() {
     return {
       id: this.id,

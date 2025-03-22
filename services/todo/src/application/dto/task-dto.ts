@@ -16,6 +16,7 @@ export class TaskDTO {
       this.title = task.title;
       this.description = task.description;
       this.status = task.status;
+      this.owner = task.owner;
     }
   }
 
@@ -33,6 +34,9 @@ export class TaskDTO {
   @IsEnum(TaskStatus)
   @IsOptional({ groups: [ValidationGroup.PATCH] })
   public status!: TaskStatus;
+
+  @IsOptional()
+  public owner!: string | undefined;
 
   public toEntity(
     id: string | undefined,
