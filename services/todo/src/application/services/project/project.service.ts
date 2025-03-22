@@ -7,6 +7,7 @@ import { ProjectDTO } from '../../dto/project-dto';
 import { EventPublisher } from '../../interfaces/event-publisher.interface';
 import { UpdateProjectMembersEvent } from '../../types/events.type';
 import { ProjectRepository } from './project.repository';
+import { logger } from '../../../layers/logger.layer';
 
 export const projectService = (
   repository: ProjectRepository,
@@ -67,9 +68,24 @@ export const projectService = (
   }
 
   async function updateTask(member: ProjectUser, value: PartialTask) {
-    const { project } = member.toDTO();
+    const task = await repository.getTask(member.toDTO().project.id, value.id);
 
-    const task = await repository.getTask(project.id, value.id);
+    if (!task.hasChanges(value)) {
+      logger.debug({ taskId: value.id }, 'Task has no changes');
+      return task;
+    }
+
+    if (value.title) {
+      task.updateTitle(value.title);
+    }
+
+    if (value.description) {
+      task.updateDescription(value.description);
+    }
+
+    if (value.owner !== undefined) {
+      task.updateOwner(value.owner);
+    }
 
     if (value.status) {
       task.transition(value.status);

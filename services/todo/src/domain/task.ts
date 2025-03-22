@@ -27,10 +27,36 @@ export class Task {
     this.status = status;
   }
 
+  updateTitle(title: string) {
+    this.title = title;
+
+    return this;
+  }
+
+  updateDescription(description: string) {
+    this.description = description;
+
+    return this;
+  }
+
+  updateOwner(owner: string | undefined) {
+    this.owner = owner;
+
+    return this;
+  }
+
   transition(status: TaskStatus) {
     this.status = status;
 
     return this;
+  }
+
+  hasChanges(value: PartialTask): boolean {
+    return Object.entries(value).some(([key, val]) => {
+      if (key === 'id') return false;
+
+      return this[key as keyof PartialTask] !== val;
+    });
   }
 
   toDTO() {
