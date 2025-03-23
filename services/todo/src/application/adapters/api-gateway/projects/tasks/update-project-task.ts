@@ -31,7 +31,7 @@ export const handler: Handler<
         });
 
         logger.info(
-          { projectId: task.toDTO().projectId, taskId: task.toDTO().id },
+          { projectId: task.toDTO().projectId, taskId: task.toDTO().id, ...event, ...context},
           'Updated task',
         );
 
@@ -48,3 +48,5 @@ export const handler: Handler<
     },
   );
 };
+
+export const updateProjectTaskHandler = handler;

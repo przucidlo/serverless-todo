@@ -43,3 +43,5 @@ export const handler: Handler<
     { target: TaskDTO, event, context },
   );
 };
+
+export const addProjectTaskHandler = handler;
