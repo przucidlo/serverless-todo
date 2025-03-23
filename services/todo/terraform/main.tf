@@ -107,8 +107,11 @@ resource "aws_lambda_function" "lambda" {
     }
   }
 
-
-  for_each = { for lambda in setunion(var.gateway_lambdas, var.lambdas, var.queues) : lambda.name => lambda }
+  for_each = { for lambda in setunion(
+    toset([for lambda in var.gateway_lambdas : { name = lambda.name }]),
+    var.lambdas,
+    var.queues
+  ) : lambda.name => lambda }
 
   depends_on = [  aws_sqs_queue.queues ]
 }

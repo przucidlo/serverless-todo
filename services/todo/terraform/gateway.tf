@@ -1,3 +1,16 @@
+locals {
+  routes = {
+    for route in flatten([
+      for lambda in var.gateway_lambdas : [
+        for route in lambda.routes : {
+          lambda_name = lambda.name
+          route      = route
+        }
+      ]
+    ]) : "${route.route}" => route
+  }
+}
+
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id = var.gateway_id
 
@@ -5,19 +18,19 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   integration_type   = "AWS_PROXY"
   integration_method = "POST"
 
-  for_each = { for lambda in var.gateway_lambdas : lambda.name => lambda if lambda.route != "" }
+  for_each = { for lambda in var.gateway_lambdas : lambda.name => lambda if lambda.routes != "" }
 }
 
 resource "aws_apigatewayv2_route" "route" {
   api_id = var.gateway_id
 
   route_key = each.value.route
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration[each.key].id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration[each.value.lambda_name].id}"
 
   authorizer_id      = aws_apigatewayv2_authorizer.authorizer.id
   authorization_type = "JWT"
 
-  for_each = { for lambda in var.gateway_lambdas : lambda.name => lambda if lambda.route != "" }
+  for_each = local.routes
 }
 
 resource "aws_lambda_permission" "api_gw" {
@@ -28,7 +41,7 @@ resource "aws_lambda_permission" "api_gw" {
 
   source_arn = "${var.gateway_lambda_execution_arn}/*/*"
 
-  for_each = { for lambda in var.gateway_lambdas : lambda.name => lambda if lambda.route != "" }
+  for_each = { for lambda in var.gateway_lambdas : lambda.name => lambda if lambda.routes != "" }
 }
 
 resource "aws_apigatewayv2_authorizer" "authorizer" {
