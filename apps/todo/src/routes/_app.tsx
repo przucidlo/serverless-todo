@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box } from "@mui/material";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import React from "react";
 import { useAuth } from "react-oidc-context";
@@ -32,7 +32,7 @@ function RouteComponent() {
 
   return (
     <React.Fragment>
-      <Box display="flex" flexDirection="row" gap={1}>
+      <Box display="flex" flexDirection="row" gap={1} width="100%">
         <ProjectsBar memberships={data} />
         <Outlet />
       </Box>
