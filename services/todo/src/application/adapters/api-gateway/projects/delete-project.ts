@@ -34,3 +34,5 @@ export const handler: Handler<
     { event, context },
   );
 };
+
+export const deleteProjectHandler = handler;

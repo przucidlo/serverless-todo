@@ -30,17 +30,22 @@ variable "deploy_folder_path" {
 
 variable "gateway_lambdas" {
   type = set(object({
-    name  = string
-    route = string
+    name   = string
+    routes = list(string)
   }))
   default = [
-    { name = "add-project", route = "POST /v1/projects" },
-    { name = "update-project", route = "PATCH /v1/projects/{projectId}" },
-    { name = "delete-project", route = "DELETE /v1/projects/{projectId}" },
-    { name = "add-project-task", route = "POST /v1/projects/{projectId}/tasks" },
-    { name = "get-project-tasks", route = "GET /v1/projects/{projectId}/tasks" },
-    { name = "update-project-task", route = "PATCH /v1/projects/{projectId}/tasks/{taskId}" },
-    { name = "get-user-projects", route = "GET /v1/users/{userId}/projects" },
+    {
+      name = "router",
+      routes = [
+        "POST /v1/projects",
+        "PATCH /v1/projects/{projectId}",
+        "DELETE /v1/projects/{projectId}",
+        "POST /v1/projects/{projectId}/tasks",
+        "GET /v1/projects/{projectId}/tasks",
+        "PATCH /v1/projects/{projectId}/tasks/{taskId}",
+        "GET /v1/users/{userId}/projects"
+      ]
+    }
   ]
 }
 

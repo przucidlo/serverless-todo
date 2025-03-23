@@ -35,3 +35,5 @@ export const handler: Handler<
     { target: ProjectDTO, event, context },
   );
 };
+
+export const updateProjectHandler = handler;
