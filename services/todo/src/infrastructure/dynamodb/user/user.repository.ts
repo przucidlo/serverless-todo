@@ -1,7 +1,7 @@
-import { PutItemCommand } from 'dynamodb-toolbox';
 import { UserRepository } from '../../../application/services/user/user.repository';
 import { userEntity } from '../entities/user.entity';
 import { User } from '../../../domain/user';
+import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 
 export const dynamodbUserRepository: () => UserRepository = () => {
   async function createUser(user: User) {

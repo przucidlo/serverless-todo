@@ -1,15 +1,15 @@
-import {
-  BatchPutRequest,
-  BatchWriteCommand,
-  executeBatchWrite,
-  GetItemCommand,
-  QueryCommand,
-} from 'dynamodb-toolbox';
 import { ProjectUser } from '../../../domain/project-user';
 import { memberEntity } from '../entities/member.entity';
 import { Identity } from '../../../domain/identity';
 import { table } from '../entities/table';
 import { Project } from '../../../domain/project';
+import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
+import {
+  BatchWriteCommand,
+  execute
+} from 'dynamodb-toolbox/table/actions/batchWrite'
+import { BatchPutRequest } from 'dynamodb-toolbox/entity/actions/batchPut';
+import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
 
 export const dynamodbMemberRepository = () => {
   async function updateMembers(project: Project) {
@@ -25,8 +25,7 @@ export const dynamodbMemberRepository = () => {
       return;
     }
 
-    await executeBatchWrite(
-      table
+    const cmd = table
         .build(BatchWriteCommand)
         .requests(
           ...Items.map((i) =>
@@ -34,8 +33,9 @@ export const dynamodbMemberRepository = () => {
               .build(BatchPutRequest)
               .item({ ...i, projectName: name }),
           ),
-        ),
-    );
+        );
+
+    await execute(cmd);
   }
 
   async function getMember(
