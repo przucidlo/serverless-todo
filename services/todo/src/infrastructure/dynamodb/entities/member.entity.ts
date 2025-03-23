@@ -1,5 +1,8 @@
-import { Entity, prefix, schema, string } from 'dynamodb-toolbox';
+import { schema } from 'dynamodb-toolbox/schema';
 import { table } from './table';
+import { prefix } from 'dynamodb-toolbox/transformers/prefix';
+import { string } from 'dynamodb-toolbox/attributes/string';
+import { Entity } from 'dynamodb-toolbox/entity';
 
 const memberSchema = schema({
   pk: string().transform(prefix('PROJECT')).key(),

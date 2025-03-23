@@ -1,10 +1,3 @@
-import {
-  DeletePartitionCommand,
-  GetItemCommand,
-  PutTransaction,
-  UpdateItemCommand,
-  executeTransactWrite,
-} from 'dynamodb-toolbox';
 import { projectEntity } from '../entities/project.entity';
 import { Project } from '../../../domain/project';
 import { table } from '../entities/table';
@@ -14,6 +7,11 @@ import { ProjectRepository } from '../../../application/services/project/project
 import { Identity } from '../../../domain/identity';
 import { dynamodbTaskRepository } from './task.repository';
 import { dynamodbMemberRepository } from './member.repository';
+import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
+import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
+import { DeletePartitionCommand } from 'dynamodb-toolbox/table/actions/deletePartition';
+import { execute } from 'dynamodb-toolbox/entity/actions/transactWrite'
+import { PutTransaction } from 'dynamodb-toolbox/entity/actions/transactPut'
 
 export const dynamodbProjectRepository: () => ProjectRepository = () => {
   const { toMember, ...memberRepository } = dynamodbMemberRepository();
@@ -51,7 +49,7 @@ export const dynamodbProjectRepository: () => ProjectRepository = () => {
       projectName: dto.name,
     });
 
-    const { ToolboxItems } = await executeTransactWrite(
+    const { ToolboxItems } = await execute(
       projectTransaction,
       projectUserTransaction,
     );

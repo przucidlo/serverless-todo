@@ -1,13 +1,11 @@
-import {
-  GetItemCommand,
-  PutItemCommand,
-  QueryCommand,
-  UpdateItemCommand,
-} from 'dynamodb-toolbox';
 import { taskEntity } from '../entities/task.entity';
 import { TaskStatus } from '../../../domain/task-status';
 import { Task } from '../../../domain/task';
 import { table } from '../entities/table';
+import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
+import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
+import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
+import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 
 export const dynamodbTaskRepository = () => {
   async function createTask(task: Task): Promise<Task> {

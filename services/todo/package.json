@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "esbuild $(find src/application/adapters -name *.ts) --bundle --minify --platform=node --target=es2020 --outdir=dist",
+    "build": "esbuild $(find src/application/adapters -name *.ts) --main-fields=module,main --bundle --minify --platform=node --target=es2020 --outdir=dist",
     "postbuild": "./postbuild.sh",
     "lint": "eslint src/**/*.ts"
   },
