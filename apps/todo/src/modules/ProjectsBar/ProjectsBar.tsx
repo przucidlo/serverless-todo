@@ -24,6 +24,7 @@ export function ProjectsBar({ memberships }: Props) {
           from="/app/projects/*"
           to="/app/projects/$projectId"
           params={{ projectId: membership.project.id }}
+          key={membership.project.id}
         >
           <IconButton key={membership.project.id}>
             <Avatar>{membership.project.name[0]}</Avatar>
