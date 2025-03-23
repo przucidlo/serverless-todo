@@ -18,5 +18,7 @@ export interface ProjectRepository {
   updateMembers: (project: Project) => Promise<void>;
 
   createTask: (task: Task) => Promise<Task>;
+  updateTask: (task: Task) => Promise<Task>;
   getTasks: (projectId: string) => Promise<Task[]>;
+  getTask: (projectId: string, taskId: string) => Promise<Task>;
 }

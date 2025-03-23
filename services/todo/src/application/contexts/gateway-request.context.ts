@@ -4,6 +4,7 @@ import { withRequest } from '../../layers/logger.layer';
 import { httpRequestContext } from './request.context';
 import { HttpUnauthorizedError } from './errors/http.error';
 import { Identity } from '../../domain/identity';
+import { ValidationOptions } from 'class-validator';
 
 export type GatewayIdentity = Identity;
 
@@ -18,6 +19,7 @@ export async function gatewayRequestContext<TBody extends object>(
     target?: ClassConstructor<TBody>;
     event: APIGatewayEvent;
     context: Context;
+    validatorOptions?: ValidationOptions;
   },
 ): Promise<APIGatewayProxyResultV2> {
   withRequest(options.event, options.context);
@@ -27,6 +29,7 @@ export async function gatewayRequestContext<TBody extends object>(
       body: options.event.body,
       method: options.event.httpMethod,
       bodyClass: options?.target,
+      validatorOptions: options.validatorOptions,
     },
     (body) => {
       const authorizer = options.event.requestContext.authorizer;

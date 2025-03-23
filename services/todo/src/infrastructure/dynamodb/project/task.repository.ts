@@ -1,4 +1,9 @@
-import { PutItemCommand, QueryCommand } from 'dynamodb-toolbox';
+import {
+  GetItemCommand,
+  PutItemCommand,
+  QueryCommand,
+  UpdateItemCommand,
+} from 'dynamodb-toolbox';
 import { taskEntity } from '../entities/task.entity';
 import { TaskStatus } from '../../../domain/task-status';
 import { Task } from '../../../domain/task';
@@ -38,6 +43,42 @@ export const dynamodbTaskRepository = () => {
     return query.Items.map(toTask);
   }
 
+  async function getTask(projectId: string, taskId: string): Promise<Task> {
+    const { Item } = await taskEntity
+      .build(GetItemCommand)
+      .key({
+        pk: projectId,
+        sk: taskId,
+      })
+      .send();
+
+    if (!Item) {
+      throw new Error('Task not found');
+    }
+
+    return toTask(Item);
+  }
+
+  async function updateTask(task: Task): Promise<Task> {
+    const { id, projectId, ...dto } = task.toDTO();
+
+    const { Attributes } = await taskEntity
+      .build(UpdateItemCommand)
+      .item({
+        pk: projectId,
+        sk: id,
+        ...dto,
+      })
+      .options({ returnValues: 'ALL_NEW' })
+      .send();
+
+    if (!Attributes) {
+      throw new Error('Task not found');
+    }
+
+    return toTask(Attributes);
+  }
+
   function toTask(item: {
     sk: string;
     pk: string;
@@ -56,5 +97,5 @@ export const dynamodbTaskRepository = () => {
     );
   }
 
-  return { createTask, getTasks };
+  return { createTask, getTasks, updateTask, getTask };
 };

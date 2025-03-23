@@ -1,12 +1,13 @@
 import { Identity } from '../../../domain/identity';
 import { PartialProject, Project } from '../../../domain/project';
 import { ProjectUser } from '../../../domain/project-user';
-import { Task } from '../../../domain/task';
+import { PartialTask, Task } from '../../../domain/task';
 import { FromApplication, isEntity } from '../../../domain/types/entity.type';
 import { ProjectDTO } from '../../dto/project-dto';
 import { EventPublisher } from '../../interfaces/event-publisher.interface';
 import { UpdateProjectMembersEvent } from '../../types/events.type';
 import { ProjectRepository } from './project.repository';
+import { logger } from '../../../layers/logger.layer';
 
 export const projectService = (
   repository: ProjectRepository,
@@ -39,7 +40,7 @@ export const projectService = (
       const member = await repository.getMember(identity, projectId);
 
       if (!member) {
-        throw new Error('User does not belong to the project');
+        throw new Error('User is not the member of the project');
       }
 
       return f(member, value);
@@ -66,6 +67,33 @@ export const projectService = (
     return entity;
   }
 
+  async function updateTask(member: ProjectUser, value: PartialTask) {
+    const task = await repository.getTask(member.toDTO().project.id, value.id);
+
+    if (!task.hasChanges(value)) {
+      logger.debug({ taskId: value.id }, 'Task has no changes');
+      return task;
+    }
+
+    if (value.title) {
+      task.updateTitle(value.title);
+    }
+
+    if (value.description) {
+      task.updateDescription(value.description);
+    }
+
+    if (value.owner !== undefined) {
+      task.updateOwner(value.owner);
+    }
+
+    if (value.status) {
+      task.transition(value.status);
+    }
+
+    return repository.updateTask(task);
+  }
+
   return {
     addProject: repository.createProject,
     deleteProject: executeAsOwner(repository.deleteProject),
@@ -76,6 +104,9 @@ export const projectService = (
     ),
     getTasks: executeAsMember<{ projectId: string }, Task[]>((member) =>
       repository.getTasks(member.toDTO().project.id),
+    ),
+    updateTask: executeAsMember<PartialTask, Task>((member, value) =>
+      updateTask(member, value),
     ),
     updateMembers: repository.updateMembers,
   };

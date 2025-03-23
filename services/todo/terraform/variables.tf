@@ -39,6 +39,7 @@ variable "gateway_lambdas" {
     { name = "delete-project", route = "DELETE /v1/projects/{projectId}" },
     { name = "add-project-task", route = "POST /v1/projects/{projectId}/tasks" },
     { name = "get-project-tasks", route = "GET /v1/projects/{projectId}/tasks" },
+    { name = "update-project-task", route = "PATCH /v1/projects/{projectId}/tasks/{taskId}" },
     { name = "get-user-projects", route = "GET /v1/users/{userId}/projects" },
   ]
 }
