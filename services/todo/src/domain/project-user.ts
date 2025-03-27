@@ -16,18 +16,22 @@ class Project {
 }
 
 export class ProjectUser {
-  private project: Project;
+  private username: string;
   private createdAt: string;
 
-  constructor(id: string, name: string, createdAt: string) {
+  private project: Project;
+
+  constructor(id: string, name: string, username: string, createdAt: string) {
     this.project = new Project(id, name);
+    this.username = username;
     this.createdAt = createdAt;
   }
 
   toDTO() {
     return {
-      project: this.project.toDTO(),
+      username: this.username,
       created_at: this.createdAt,
+      project: this.project.toDTO(),
     };
   }
 }

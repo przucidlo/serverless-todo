@@ -19,12 +19,15 @@ export class ProjectUserDTO {
       const dto = entity.toDTO();
 
       this.project = new ProjectDTO(dto.project.id, dto.project.name);
+      this.username = dto.username;
       this.created_at = dto.created_at;
     }
   }
 
   @ValidateNested()
   project!: ProjectDTO;
+
+  username!: string;
 
   created_at!: string;
 }
