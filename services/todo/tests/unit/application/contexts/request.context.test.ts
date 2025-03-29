@@ -1,6 +1,6 @@
 import { test, describe, expect } from 'vitest';
-import { httpRequestContext } from './request.context';
 import { IsString } from 'class-validator';
+import { httpRequestContext } from '../../../../src/application/contexts/request.context';
 
 describe('requestContext', () => {
   test('Should transform body from plain object into class', async () => {

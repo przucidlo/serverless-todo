@@ -28,16 +28,15 @@ export const inMemoryProjectRepository = (): ProjectRepository => {
     identity: Identity,
   ): Promise<[Project, ProjectUser]> {
     const dto = project.toDTO();
+
     projectsStore.push(dto);
 
-    const projectUser = new ProjectUser(
-      dto.id,
-      dto.name,
+    const member = await memberRepository.createMember(
+      project,
       identity.username,
-      new Date().toISOString(),
     );
 
-    return [toProject(dto), projectUser];
+    return [toProject(dto), member];
   }
 
   async function updateProject(project: Project): Promise<Project> {

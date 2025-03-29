@@ -30,6 +30,12 @@ export class Project implements Entity {
     return this.id;
   }
 
+  hasChanges(value: PartialProject): boolean {
+    return Object.entries(value).some(
+      ([key, val]) => this[key as keyof PartialProject] !== val,
+    );
+  }
+
   toDTO() {
     return {
       id: this.id,

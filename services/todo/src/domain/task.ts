@@ -52,11 +52,9 @@ export class Task {
   }
 
   hasChanges(value: PartialTask): boolean {
-    return Object.entries(value).some(([key, val]) => {
-      if (key === 'id') return false;
-
-      return this[key as keyof PartialTask] !== val;
-    });
+    return Object.entries(value).some(
+      ([key, val]) => this[key as keyof PartialTask] !== val,
+    );
   }
 
   toDTO() {

@@ -6,6 +6,7 @@ import { Identity } from '../../../../src/domain/identity';
 import { Project } from '../../../../src/domain/project';
 import { Task } from '../../../../src/domain/task';
 import { ProjectRepository } from '../../../application/services/project/project.repository';
+import { TaskStatus } from '../../../../src/domain/task-status';
 
 describe('Project Service', () => {
   let repository: ProjectRepository;
@@ -17,10 +18,13 @@ describe('Project Service', () => {
 
   beforeEach(() => {
     repository = inMemoryProjectRepository();
+
     publisher = {
       publish: vi.fn().mockResolvedValue(undefined),
     };
+
     service = projectService(repository, publisher);
+
     identity = { username: 'user' };
     project = new Project('project-123', 'Test Project', identity.username);
   });
@@ -30,34 +34,28 @@ describe('Project Service', () => {
       await repository.createProject(project, identity);
     });
 
-    it('should update project when user is the owner', async () => {
+    it('Should update project', async () => {
       const name = 'Mock name';
 
       const updatedProject = await service.updateProject(identity, {
-        id: project.getId(),
+        ...project.toDTO(),
         name,
       });
 
-      expect(updatedProject.toDTO()).toMatchObject({ name: name });
+      expect(updatedProject.toDTO()).toMatchObject({ name });
     });
 
-    it('should not update if no changes are needed', async () => {
+    it('Should not update if project did not change', async () => {
       const updateProjectSpy = vi.spyOn(repository, 'updateProject');
 
-      await service.updateProject(identity, {
-        id: project.getId(),
-        name: project.toDTO().name,
-      });
+      await service.updateProject(identity, project.toDTO());
 
-      // Verify that the repository was still called (although no change to name)
-      expect(updateProjectSpy).toHaveBeenCalled();
-      // Verify that no event was published since no changes occurred
-      expect(publisher.publish).not.toHaveBeenCalled();
+      expect(updateProjectSpy).not.toHaveBeenCalled();
     });
 
-    it('should publish an event when project name is updated', async () => {
+    it('Should publish an event when project name is updated', async () => {
       await service.updateProject(identity, {
-        id: project.getId(),
+        ...project.toDTO(),
         name: 'Updated Project',
       });
 
@@ -67,14 +65,11 @@ describe('Project Service', () => {
       );
     });
 
-    it('should throw an error when user is not the owner', async () => {
-      const nonOwner = new Identity('user2', 'User Two');
+    it('Should throw an error when user is not the owner', async () => {
+      const anotherIdentity = { username: 'user2' };
 
       await expect(
-        service.updateProject(nonOwner, {
-          id: project.getId(),
-          name: 'Updated Project',
-        }),
+        service.updateProject(anotherIdentity, project.toDTO()),
       ).rejects.toThrow('Insufficient permissions.');
     });
   });
@@ -84,86 +79,48 @@ describe('Project Service', () => {
 
     beforeEach(async () => {
       await repository.createProject(project, identity);
-      task = new Task('task-123', 'Test Task', '', project.getId(), 'user1');
+
+      task = new Task(
+        'task-123',
+        project.getId(),
+        'title',
+        'description',
+        identity.username,
+        TaskStatus.NEW,
+      );
+
       await repository.createTask(task);
     });
 
-    it('should update task title', async () => {
-      const updatedTask = await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
+    it('Should update task', async () => {
+      const taskFields = {
         title: 'Updated Task',
-      });
-
-      expect(updatedTask.getTitle()).toBe('Updated Task');
-    });
-
-    it('should update task description', async () => {
-      const updatedTask = await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
         description: 'Updated description',
-      });
+        status: TaskStatus.IN_PROGRESS,
+      };
 
-      expect(updatedTask.getDescription()).toBe('Updated description');
-    });
-
-    it('should update task owner', async () => {
       const updatedTask = await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
-        owner: 'user2',
+        ...task.toDTO(),
+        ...taskFields,
       });
 
-      expect(updatedTask.getOwner()).toBe('user2');
+      expect(updatedTask).toMatchObject(taskFields);
     });
 
-    it('should update task status', async () => {
-      const updatedTask = await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
-        status: 'IN_PROGRESS',
-      });
-
-      expect(updatedTask.getStatus()).toBe('IN_PROGRESS');
-    });
-
-    it('should not update task if no changes are detected', async () => {
+    it('Should not update if task did not change', async () => {
       const updateTaskSpy = vi.spyOn(repository, 'updateTask');
 
-      await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
-        title: 'Test Task', // Same title as before
-      });
+      await service.updateTask(identity, task.toDTO());
 
       expect(updateTaskSpy).not.toHaveBeenCalled();
     });
 
-    it('should throw an error when user is not a member of the project', async () => {
-      const nonMember = new Identity('user2', 'User Two');
+    it('Should throw an error when user is not a member of the project', async () => {
+      const nonMember = { username: 'non-member' };
 
-      await expect(
-        service.updateTask(nonMember, {
-          id: task.getId(),
-          projectId: project.getId(),
-          title: 'Updated Task',
-        }),
-      ).rejects.toThrow('User is not the member of the project');
-    });
-
-    it('should apply multiple updates at once', async () => {
-      const updatedTask = await service.updateTask(identity, {
-        id: task.getId(),
-        projectId: project.getId(),
-        title: 'Updated Task',
-        description: 'Updated description',
-        status: 'DONE',
-      });
-
-      expect(updatedTask.getTitle()).toBe('Updated Task');
-      expect(updatedTask.getDescription()).toBe('Updated description');
-      expect(updatedTask.getStatus()).toBe('DONE');
+      await expect(service.updateTask(nonMember, task.toDTO())).rejects.toThrow(
+        'User is not the member of the project',
+      );
     });
   });
 });
