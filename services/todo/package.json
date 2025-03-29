@@ -7,7 +7,9 @@
     "prebuild": "rm -rf dist",
     "build": "esbuild $(find src/application/adapters -name *.ts) --main-fields=module,main --bundle --minify --platform=node --target=es2020 --outdir=dist",
     "postbuild": "./postbuild.sh",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration"
   },
   "author": "",
   "license": "ISC",

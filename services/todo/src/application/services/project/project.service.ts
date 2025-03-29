@@ -37,17 +37,21 @@ export const projectService = (
         ? value.toDTO().projectId
         : value.projectId;
 
-      const member = await repository.getMember(identity, projectId);
+      try {
+        const member = await repository.getMember(identity, projectId);
 
-      if (!member) {
+        return f(member, value);
+      } catch {
         throw new Error('User is not the member of the project');
       }
-
-      return f(member, value);
     };
 
   async function updateProject(project: Project, value: PartialProject) {
     let requiresMembersUpdate = false;
+
+    if (!project.hasChanges(value)) {
+      return project;
+    }
 
     if (value.name && !project.compareNames(value.name)) {
       project.changeName(value.name);
@@ -71,7 +75,6 @@ export const projectService = (
     const task = await repository.getTask(member.toDTO().project.id, value.id);
 
     if (!task.hasChanges(value)) {
-      logger.debug({ taskId: value.id }, 'Task has no changes');
       return task;
     }
 

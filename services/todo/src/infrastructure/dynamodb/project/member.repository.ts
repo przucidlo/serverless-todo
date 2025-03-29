@@ -6,8 +6,8 @@ import { Project } from '../../../domain/project';
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import {
   BatchWriteCommand,
-  execute
-} from 'dynamodb-toolbox/table/actions/batchWrite'
+  execute,
+} from 'dynamodb-toolbox/table/actions/batchWrite';
 import { BatchPutRequest } from 'dynamodb-toolbox/entity/actions/batchPut';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
 
@@ -26,14 +26,12 @@ export const dynamodbMemberRepository = () => {
     }
 
     const cmd = table
-        .build(BatchWriteCommand)
-        .requests(
-          ...Items.map((i) =>
-            memberEntity
-              .build(BatchPutRequest)
-              .item({ ...i, projectName: name }),
-          ),
-        );
+      .build(BatchWriteCommand)
+      .requests(
+        ...Items.map((i) =>
+          memberEntity.build(BatchPutRequest).item({ ...i, projectName: name }),
+        ),
+      );
 
     await execute(cmd);
   }
@@ -84,7 +82,7 @@ export const dynamodbMemberRepository = () => {
     projectName: string;
     created: string;
   }): ProjectUser {
-    return new ProjectUser(item.pk, item.projectName, item.created);
+    return new ProjectUser(item.pk, item.projectName, item.sk, item.created);
   }
 
   return {
