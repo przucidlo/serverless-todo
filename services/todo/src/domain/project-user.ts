@@ -7,6 +7,10 @@ class Project {
     this.name = name;
   }
 
+  hasId(id: string): boolean {
+    return this.id === id;
+  }
+
   toDTO() {
     return {
       id: this.id,
@@ -25,6 +29,10 @@ export class ProjectUser {
     this.project = new Project(id, name);
     this.username = username;
     this.createdAt = createdAt;
+  }
+
+  isMember(projectId: string): boolean {
+    return this.project.hasId(projectId);
   }
 
   toDTO() {
