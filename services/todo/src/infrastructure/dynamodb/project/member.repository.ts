@@ -36,6 +36,10 @@ export const dynamodbMemberRepository = () => {
     await execute(cmd);
   }
 
+  async function createMember(): Promise<ProjectUser> {
+    return member;
+  }
+
   async function getMember(
     identity: Identity,
     projectId: string,

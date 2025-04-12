@@ -1,4 +1,3 @@
-import { Identity } from '../../../domain/identity';
 import { PartialProject, Project } from '../../../domain/project';
 import { ProjectUser } from '../../../domain/project-user';
 import { PartialTask, Task } from '../../../domain/task';
@@ -13,11 +12,8 @@ export const projectService = (
   repository: ProjectRepository,
   publisher: EventPublisher,
 ) => {
-  const asOwner = projectOwnerGuard(repository);
-  const asMember = (identity: Identity, projectId: string) =>
-    repository
-      .getMember(identity, projectId)
-      .then((member) => projectMemberGuard(member));
+  const asOwner = projectOwnerGuard(repository.getProject);
+  const asMember = projectMemberGuard(repository.getMember);
 
   async function updateProject(project: Project, value: PartialProject) {
     let requiresMembersUpdate = false;
@@ -80,7 +76,7 @@ export const projectService = (
     getTasks: asMember<[{ projectId: string }], Task[]>((member) =>
       repository.getTasks(member.toDTO().project.id),
     ),
-    updateTask: asMember<[PartialTask, Project]>((member, value) =>
+    updateTask: asMember<[PartialTask]>((member, value) =>
       updateTask(member, value),
     ),
   };
