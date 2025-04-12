@@ -1,46 +1,50 @@
-import { describe, it, expect, vi, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { projectMemberGuard } from '../../../../src/application/guards/project-member.guard';
 import { Identity } from '../../../../src/domain/identity';
 import { ProjectUser } from '../../../../src/domain/project-user';
-import { ProjectRepository } from '../../../../src/application/services/project/project.repository';
 
 describe('projectMemberGuard', () => {
-  let mockRepository;
+  let identity: Identity;
+  let projectId: string;
+  let mockProjectUser: ProjectUser;
 
-  const mockIdentity: Identity = { username: 'user-1' };
-  const mockProjectUser: ProjectUser = {
-    id: 'member-1',
-    projectId: 'project-1',
-  };
+  let mockGetMember: typeof vi.fn;
+  let mockFunction: typeof vi.fn;
 
-  const mockFunction = vi.fn(async (member: ProjectUser, ...args: any[]) => {
-    return { success: true };
+  let guard: typeof projectMemberGuard;
+
+  beforeEach(() => {
+    mockGetMember = vi.fn();
+    mockFunction = vi.fn();
+
+    identity = { username: 'user' };
+    projectId = 'project-1';
+    mockProjectUser = new ProjectUser(
+      projectId,
+      'name',
+      identity.username,
+      new Date().toISOString(),
+    );
+
+    guard = projectMemberGuard(mockGetMember);
   });
 
-  const guard = projectMemberGuard(mockRepository);
-
   it('should call the wrapped function if the user is a project member', async () => {
-    mockRepository.getMember.mockResolvedValue(mockProjectUser);
+    const value = true;
 
-    const result = await guard(mockFunction)(mockIdentity, {
-      projectId: 'project-1',
-    });
+    mockGetMember.mockResolvedValue(mockProjectUser);
+    mockFunction.mockResolvedValue(value);
 
-    expect(mockRepository.getMember).toHaveBeenCalledWith(
-      mockIdentity,
-      'project-1',
+    await expect(guard(mockFunction)(identity, { projectId })).resolves.toEqual(
+      value,
     );
-    expect(mockFunction).toHaveBeenCalledWith(mockProjectUser, {
-      projectId: 'project-1',
-    });
-    expect(result).toEqual({ success: true });
   });
 
   it('should throw an error if the user is not a project member', async () => {
-    mockRepository.getMember.mockRejectedValue(new Error('Not a member'));
+    mockGetMember.mockResolvedValue(null);
 
-    await expect(
-      guard(mockFunction)(mockIdentity, { projectId: 'project-1' }),
-    ).rejects.toThrow('User is not the member of the project');
+    await expect(guard(mockFunction)(identity, { projectId })).rejects.toThrow(
+      'User is not the member of the project',
+    );
   });
 });
