@@ -71,6 +71,7 @@ export const projectService = (
     deleteProject: asOwner(repository.deleteProject),
     updateProject: asOwner(updateProject),
     getProjects: repository.getUserProjects,
+    getProject: repository.getProject,
 
     addTask: asMember<[Task], Task>((_, task) => repository.createTask(task)),
     getTasks: asMember<[{ projectId: string }], Task[]>((member) =>
@@ -79,5 +80,7 @@ export const projectService = (
     updateTask: asMember<[PartialTask]>((member, value) =>
       updateTask(member, value),
     ),
+
+    addMember: asMember<[{ projectId: string }, ProjectUser]>((member, value) => ),
   };
 };

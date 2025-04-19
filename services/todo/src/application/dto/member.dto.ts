@@ -30,4 +30,17 @@ export class ProjectUserDTO {
   username!: string;
 
   created_at!: string;
+
+  public toEntity(
+    projectId: string,
+    projectName: string,
+    username: string,
+  ): ProjectUser {
+    return new ProjectUser(
+      projectId,
+      projectName,
+      username,
+      new Date().toISOString(),
+    );
+  }
 }
